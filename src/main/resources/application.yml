@@ -1,0 +1,29 @@
+micronaut:
+  application:
+    name: bff-gateway
+  server:
+    port: 8082
+    context-path: /v1/bff
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+  http:
+    services:
+      iam:
+        url: ${bff.iam-base-url}
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+  metrics:
+    enabled: false
+  prometheus:
+    enabled: true
+    sensitive: false
+    path: metrics
+
+bff:
+  iam-base-url: ${IAM_BASE_URL:http://localhost:8080/v1/iam}
