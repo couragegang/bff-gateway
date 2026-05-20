@@ -7,8 +7,8 @@ version = "0.1.0-SNAPSHOT"
 group = "com.couragegang.bff"
 
 repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
 }
 
 java {
@@ -31,6 +31,7 @@ dependencies {
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
 
     implementation("io.micronaut:micronaut-http-server-netty")
+    implementation("io.projectreactor:reactor-core")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-management")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-prometheus")

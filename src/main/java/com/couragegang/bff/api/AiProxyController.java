@@ -14,7 +14,7 @@ import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.annotation.Nullable;
 
 @Controller("/api")
-public final class AiProxyController {
+public class AiProxyController {
 
     private final AiClient ai;
     private final ObjectMapper json;

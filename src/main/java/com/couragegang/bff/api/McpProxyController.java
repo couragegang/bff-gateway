@@ -13,7 +13,7 @@ import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.HttpStatus;
 
 @Controller("/api/mcp")
-public final class McpProxyController {
+public class McpProxyController {
 
     private final McpClient mcp;
 

@@ -13,7 +13,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 @Filter("/api/**")
-public final class JwtAuthFilter implements HttpServerFilter {
+public class JwtAuthFilter implements HttpServerFilter {
 
     private final IamIntrospectClient iam;
 
