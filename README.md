@@ -1,11 +1,23 @@
-# BFF Gateway
+# bff-gateway
 
-Edge API для Web UI: проверка JWT через **IAM introspect**, прокси к `mcp-gateway` и `ai-runtime`.
+BFF для Web UI: JWT → IAM introspect → прокси к MCP и AI.
 
-- Префикс: **`/v1/bff`**
-- Порт: **8082**
-- Защищённые маршруты: **`/v1/bff/api/**`** (нужен `Authorization: Bearer`)
+Порт **8082**, префикс `/v1/bff`.
 
-```bash
-./gradlew run
-```
+## Защищённые маршруты (`Authorization: Bearer`)
+
+| Метод | BFF | Прокси |
+|-------|-----|--------|
+| GET | `/api/me` | IAM introspect claims |
+| GET | `/api/mcp/catalog` | mcp-gateway |
+| GET | `/api/mcp/workspaces/{id}/installations` | mcp-gateway |
+| POST | `/api/mcp/workspaces/{id}/installations` | mcp-gateway (+ X-Org-Id из JWT) |
+| POST | `/api/chat` | ai-runtime (`workspaceId` из JWT или `X-Workspace-Id`) |
+
+## Переменные
+
+| Переменная | Default |
+|------------|---------|
+| `IAM_BASE_URL` | http://localhost:8080/v1/iam |
+| `MCP_BASE_URL` | http://localhost:8081/v1/mcp |
+| `AI_BASE_URL` | http://localhost:8083/v1/ai |

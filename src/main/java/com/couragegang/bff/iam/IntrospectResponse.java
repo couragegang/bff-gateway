@@ -8,5 +8,7 @@ public record IntrospectResponse(
         boolean active,
         String sub,
         String orgId,
+        String groupId,
+        String workspaceId,
         List<String> permissions
 ) {}

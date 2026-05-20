@@ -11,7 +11,8 @@ class IamIntrospectClientTest {
   @Test
   void inactiveTokenReturnsEmpty() {
     var api = mock(IamApi.class);
-    when(api.introspect(new TokenRequest("bad"))).thenReturn(new IntrospectResponse(false, null, null, null));
+    when(api.introspect(new TokenRequest("bad")))
+            .thenReturn(new IntrospectResponse(false, null, null, null, null, null));
     var client = new IamIntrospectClient(api);
     assertTrue(client.introspect("bad").isEmpty());
   }

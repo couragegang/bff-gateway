@@ -19,11 +19,13 @@ public final class IamIntrospectClient {
             if (r == null || !r.active()) {
                 return Optional.empty();
             }
-            return Optional.of(new IntrospectResult(r.sub(), r.orgId(), r.permissions()));
+            return Optional.of(
+                    new IntrospectResult(r.sub(), r.orgId(), r.groupId(), r.workspaceId(), r.permissions()));
         } catch (Exception e) {
             return Optional.empty();
         }
     }
 
-    public record IntrospectResult(String userId, String orgId, List<String> permissions) {}
+    public record IntrospectResult(
+            String userId, String orgId, String groupId, String workspaceId, List<String> permissions) {}
 }
