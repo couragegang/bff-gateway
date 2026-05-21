@@ -12,16 +12,18 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.RequestAttribute;
 import io.micronaut.http.exceptions.HttpStatusException;
 import jakarta.annotation.Nullable;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 
+@ExecuteOn(TaskExecutors.BLOCKING)
 @Controller("/api")
 public class AiProxyController {
 
     private final AiClient ai;
-    private final ObjectMapper json;
+    private final ObjectMapper json = new ObjectMapper();
 
-    public AiProxyController(AiClient ai, ObjectMapper json) {
+    public AiProxyController(AiClient ai) {
         this.ai = ai;
-        this.json = json;
     }
 
     @Post("/chat")

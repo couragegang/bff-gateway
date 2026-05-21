@@ -8,6 +8,6 @@ import io.micronaut.http.client.annotation.Client;
 @Client(id = "ai")
 public interface AiClient {
 
-    @Post("/chat")
+    @Post("/v1/ai/chat")
     HttpResponse<String> chat(@Body String body);
 }

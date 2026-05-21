@@ -11,13 +11,13 @@ import io.micronaut.http.client.annotation.Client;
 @Client(id = "mcp")
 public interface McpClient {
 
-    @Get("/catalog")
+    @Get("/v1/mcp/catalog")
     HttpResponse<String> catalog();
 
-    @Get("/workspaces/{workspaceId}/installations")
+    @Get("/v1/mcp/workspaces/{workspaceId}/installations")
     HttpResponse<String> listInstallations(@PathVariable String workspaceId);
 
-    @Post("/workspaces/{workspaceId}/installations")
+    @Post("/v1/mcp/workspaces/{workspaceId}/installations")
     HttpResponse<String> createInstallation(
             @PathVariable String workspaceId,
             @Header("X-Org-Id") String orgId,
