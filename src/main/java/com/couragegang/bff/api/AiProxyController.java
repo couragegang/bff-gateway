@@ -29,6 +29,8 @@ public class AiProxyController {
     @Post("/chat")
     public HttpResponse<String> chat(
             @RequestAttribute(value = SecurityAttributes.WORKSPACE_ID, defaultValue = "") String workspaceFromJwt,
+            @RequestAttribute(value = SecurityAttributes.ORG_ID, defaultValue = "") String orgId,
+            @RequestAttribute(SecurityAttributes.USER_ID) String userId,
             @Header("X-Workspace-Id") @Nullable String workspaceHeader,
             @Body String body)
             throws Exception {
@@ -41,6 +43,12 @@ public class AiProxyController {
         }
         var node = (ObjectNode) json.readTree(body);
         node.put("workspaceId", workspaceId);
+        if (orgId != null && !orgId.isBlank()) {
+            node.put("orgId", orgId);
+        }
+        if (userId != null && !userId.isBlank()) {
+            node.put("userId", userId);
+        }
         var downstream = ai.chat(json.writeValueAsString(node));
         if (downstream.getStatus().getCode() >= 400) {
             throw new HttpStatusException(downstream.getStatus(), downstream.body());
