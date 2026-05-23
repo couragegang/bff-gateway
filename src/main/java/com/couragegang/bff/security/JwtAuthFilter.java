@@ -28,6 +28,9 @@ public class JwtAuthFilter implements HttpServerFilter {
 
     @Override
     public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
+        if (isPublicAuthRoute(request)) {
+            return chain.proceed(request);
+        }
         var auth = request.getHeaders().getAuthorization().orElse(null);
         if (auth == null || !auth.startsWith("Bearer ")) {
             return Mono.just(unauthorized("Bearer token required"));
@@ -55,5 +58,10 @@ public class JwtAuthFilter implements HttpServerFilter {
     private static MutableHttpResponse<?> unauthorized(String message) {
         return HttpResponse.status(HttpStatus.UNAUTHORIZED)
                 .body(java.util.Map.of("code", "UNAUTHORIZED", "message", message));
+    }
+
+    static boolean isPublicAuthRoute(HttpRequest<?> request) {
+        var path = request.getPath();
+        return path.equals("/api/auth") || path.startsWith("/api/auth/");
     }
 }
