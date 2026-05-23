@@ -13,8 +13,10 @@ class BffPropertiesTest {
         props.setPolicyBaseUrl("http://policy/");
         props.setAuditBaseUrl("http://audit/");
         props.setKnowledgeBaseUrl("http://knowledge/");
+        props.setConfigBaseUrl("http://config/");
 
         assertThat(props.getIamBaseUrl()).endsWith("/");
         assertThat(props.getPolicyBaseUrl()).isNotBlank();
+        assertThat(props.getConfigBaseUrl()).contains("config");
     }
 }

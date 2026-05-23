@@ -45,4 +45,15 @@ class DownstreamClientTest {
         assertThat(res.getStatus().getCode()).isEqualTo(200);
         assertThat(server.takeRequest().getMethod()).isEqualTo("POST");
     }
+
+    @Test
+    void patchSendsJson() throws Exception {
+        server.enqueue(new MockResponse().setBody("{}"));
+        var url = server.url("/workspaces/ws-1").toString();
+
+        var res = client.patch(url, "{\"name\":\"Renamed\"}");
+
+        assertThat(res.getStatus().getCode()).isEqualTo(200);
+        assertThat(server.takeRequest().getMethod()).isEqualTo("PATCH");
+    }
 }

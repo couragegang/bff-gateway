@@ -30,4 +30,19 @@ public final class DownstreamClient {
         return HttpResponse.status(io.micronaut.http.HttpStatus.valueOf(response.statusCode()))
                 .body(response.body());
     }
+
+    public HttpResponse<String> patch(String url, String body) throws Exception {
+        var request =
+                HttpRequest.newBuilder(URI.create(url))
+                        .timeout(Duration.ofSeconds(15))
+                        .header("Content-Type", "application/json")
+                        .method(
+                                "PATCH",
+                                HttpRequest.BodyPublishers.ofString(
+                                        body != null ? body : "{}", StandardCharsets.UTF_8))
+                        .build();
+        var response = http.send(request, BodyHandlers.ofString());
+        return HttpResponse.status(io.micronaut.http.HttpStatus.valueOf(response.statusCode()))
+                .body(response.body());
+    }
 }

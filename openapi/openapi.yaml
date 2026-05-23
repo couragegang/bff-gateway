@@ -1,0 +1,140 @@
+openapi: 3.1.0
+info:
+  title: BFF Gateway API (browser)
+  version: 0.1.0-draft
+  description: |
+    Единая точка входа Web UI. JWT → IAM introspect → прокси к доменным сервисам.
+    Не дублирует доменную логику; агрегирует публичные paths.
+servers:
+  - url: http://localhost:8082/v1/bff
+    description: локально
+tags:
+  - name: session
+  - name: proxy
+security:
+  - bearerAuth: []
+paths:
+  /api/me:
+    get:
+      tags: [session]
+      summary: Профиль + контекст org/group/workspace из JWT
+      operationId: bffMe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BffMeResponse'
+  /api/chat:
+    post:
+      tags: [proxy]
+      summary: Прокси → ai-runtime /chat
+      operationId: bffChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Ответ AI
+  /api/config/orgs/{orgId}/workspaces:
+    get:
+      tags: [proxy]
+      summary: Прокси → config-service list workspaces
+      operationId: bffConfigWorkspacesList
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: group_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: WorkspaceListResponse
+    post:
+      tags: [proxy]
+      summary: Прокси → config-service create workspace
+      operationId: bffConfigWorkspacesCreate
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Workspace created
+  /api/config/workspaces/{workspaceId}:
+    get:
+      tags: [proxy]
+      summary: Прокси → config-service get workspace
+      operationId: bffConfigWorkspaceGet
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Workspace
+    patch:
+      tags: [proxy]
+      summary: Прокси → config-service patch workspace
+      operationId: bffConfigWorkspacePatch
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Workspace updated
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    BffMeResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        orgId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            type: string

@@ -9,6 +9,7 @@ public class BffProperties {
     private String policyBaseUrl = "http://localhost:8085/v1/policy";
     private String auditBaseUrl = "http://localhost:8086/v1/audit";
     private String knowledgeBaseUrl = "http://localhost:8088/v1/knowledge";
+    private String configBaseUrl = "http://localhost:8084/v1/config";
 
     public String getIamBaseUrl() {
         return iamBaseUrl;
@@ -40,5 +41,13 @@ public class BffProperties {
 
     public void setKnowledgeBaseUrl(String knowledgeBaseUrl) {
         this.knowledgeBaseUrl = knowledgeBaseUrl;
+    }
+
+    public String getConfigBaseUrl() {
+        return configBaseUrl;
+    }
+
+    public void setConfigBaseUrl(String configBaseUrl) {
+        this.configBaseUrl = configBaseUrl;
     }
 }

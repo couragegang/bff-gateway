@@ -36,3 +36,4 @@ bff:
   policy-base-url: ${POLICY_BASE_URL:http://localhost:8085/v1/policy}
   audit-base-url: ${AUDIT_BASE_URL:http://localhost:8086/v1/audit}
   knowledge-base-url: ${KNOWLEDGE_BASE_URL:http://localhost:8088/v1/knowledge}
+  config-base-url: ${CONFIG_BASE_URL:http://localhost:8084/v1/config}
