@@ -12,7 +12,7 @@ public final class HealthInfoController {
         return Map.of(
                 "service", "bff-gateway",
                 "health", "/v1/bff/health",
-                "metrics", "/v1/bff/metrics"
+                "metrics", "/v1/bff/prometheus"
         );
     }
 }

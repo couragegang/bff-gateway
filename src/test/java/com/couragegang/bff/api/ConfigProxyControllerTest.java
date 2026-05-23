@@ -2,7 +2,10 @@ package com.couragegang.bff.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.couragegang.bff.client.DownstreamClient;
 import com.couragegang.bff.config.BffProperties;
+import com.couragegang.bff.metrics.OutboundHttpMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -20,7 +23,9 @@ class ConfigProxyControllerTest {
         server.start();
         var props = new BffProperties();
         props.setConfigBaseUrl(server.url("/v1/config").toString());
-        controller = new ConfigProxyController(props);
+        controller =
+                new ConfigProxyController(
+                        props, new DownstreamClient(new OutboundHttpMetrics(new SimpleMeterRegistry())));
     }
 
     @AfterEach

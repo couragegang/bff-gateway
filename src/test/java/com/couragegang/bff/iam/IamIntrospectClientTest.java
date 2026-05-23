@@ -3,7 +3,9 @@ package com.couragegang.bff.iam;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.couragegang.bff.config.BffProperties;
+import com.couragegang.bff.metrics.OutboundHttpMetrics;
 import com.sun.net.httpserver.HttpServer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +18,16 @@ class IamIntrospectClientTest {
     HttpServer server;
     String baseUrl;
     int port;
+    OutboundHttpMetrics metrics;
+
+    @BeforeEach
+    void initMetrics() {
+        metrics = new OutboundHttpMetrics(new SimpleMeterRegistry());
+    }
+
+    private IamIntrospectClient client(BffProperties props) {
+        return new IamIntrospectClient(props, metrics);
+    }
 
     @BeforeEach
     void startServer() throws Exception {
@@ -36,8 +48,7 @@ class IamIntrospectClientTest {
     void unreachableIamReturnsEmpty() {
         var props = new BffProperties();
         props.setIamBaseUrl("http://127.0.0.1:1");
-        var client = new IamIntrospectClient(props);
-        assertThat(client.introspect("bad")).isEmpty();
+        assertThat(client(props).introspect("bad")).isEmpty();
     }
 
     @Test
@@ -58,9 +69,7 @@ class IamIntrospectClientTest {
 
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl);
-        var client = new IamIntrospectClient(props);
-
-        var result = client.introspect("token");
+        var result = client(props).introspect("token");
 
         assertThat(result).isPresent();
         assertThat(result.get().userId()).isEqualTo("user-1");
@@ -84,7 +93,7 @@ class IamIntrospectClientTest {
 
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl + "/");
-        assertThat(new IamIntrospectClient(props).introspect("t")).isEmpty();
+        assertThat(client(props).introspect("t")).isEmpty();
     }
 
     @Test
@@ -101,7 +110,7 @@ class IamIntrospectClientTest {
 
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl);
-        assertThat(new IamIntrospectClient(props).introspect("t")).isEmpty();
+        assertThat(client(props).introspect("t")).isEmpty();
     }
 
     @Test
@@ -118,7 +127,7 @@ class IamIntrospectClientTest {
 
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl);
-        var result = new IamIntrospectClient(props).introspect("t");
+        var result = client(props).introspect("t");
 
         assertThat(result).isPresent();
         assertThat(result.get().permissions()).isEmpty();
@@ -132,6 +141,6 @@ class IamIntrospectClientTest {
 
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl);
-        assertThat(new IamIntrospectClient(props).introspect("t")).isEmpty();
+        assertThat(client(props).introspect("t")).isEmpty();
     }
 }

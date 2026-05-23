@@ -19,15 +19,16 @@ import jakarta.annotation.Nullable;
 public class PolicyProxyController {
 
     private final String policyBase;
-    private final DownstreamClient http = new DownstreamClient();
+    private final DownstreamClient http;
 
-    public PolicyProxyController(BffProperties props) {
+    public PolicyProxyController(BffProperties props, DownstreamClient http) {
         this.policyBase = trim(props.getPolicyBaseUrl());
+        this.http = http;
     }
 
     @Get("/orgs/{orgId}/rules")
     public HttpResponse<String> rules(@PathVariable String orgId) throws Exception {
-        return forward(http.get(policyBase + "/orgs/" + orgId + "/rules"));
+        return forward(http.get(policyBase + "/orgs/" + orgId + "/rules", "policy", "list_rules"));
     }
 
     @Get("/orgs/{orgId}/pending-approvals")
@@ -38,22 +39,32 @@ public class PolicyProxyController {
         if (workspaceId != null && !workspaceId.isBlank()) {
             url += "?workspace_id=" + workspaceId;
         }
-        return forward(http.get(url));
+        return forward(http.get(url, "policy", "list_pending"));
     }
 
     @Get("/pending-approvals/{id}")
     public HttpResponse<String> pendingGet(@PathVariable String id) throws Exception {
-        return forward(http.get(policyBase + "/pending-approvals/" + id));
+        return forward(http.get(policyBase + "/pending-approvals/" + id, "policy", "get_pending"));
     }
 
     @Post("/pending-approvals/{id}/approve")
     public HttpResponse<String> approve(@PathVariable String id, @Body @Nullable String body) throws Exception {
-        return forward(http.post(policyBase + "/pending-approvals/" + id + "/approve", body != null ? body : "{}"));
+        return forward(
+                http.post(
+                        policyBase + "/pending-approvals/" + id + "/approve",
+                        body != null ? body : "{}",
+                        "policy",
+                        "approve"));
     }
 
     @Post("/pending-approvals/{id}/reject")
     public HttpResponse<String> reject(@PathVariable String id, @Body @Nullable String body) throws Exception {
-        return forward(http.post(policyBase + "/pending-approvals/" + id + "/reject", body != null ? body : "{}"));
+        return forward(
+                http.post(
+                        policyBase + "/pending-approvals/" + id + "/reject",
+                        body != null ? body : "{}",
+                        "policy",
+                        "reject"));
     }
 
     private static HttpResponse<String> forward(HttpResponse<String> downstream) {

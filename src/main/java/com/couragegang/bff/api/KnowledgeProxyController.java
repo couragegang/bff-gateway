@@ -9,7 +9,6 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.http.annotation.QueryValue;
 import io.micronaut.http.annotation.RequestAttribute;
 import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.scheduling.TaskExecutors;
@@ -21,15 +20,16 @@ import jakarta.annotation.Nullable;
 public class KnowledgeProxyController {
 
     private final String knowledgeBase;
-    private final DownstreamClient http = new DownstreamClient();
+    private final DownstreamClient http;
 
-    public KnowledgeProxyController(BffProperties props) {
+    public KnowledgeProxyController(BffProperties props, DownstreamClient http) {
         this.knowledgeBase = trim(props.getKnowledgeBaseUrl());
+        this.http = http;
     }
 
     @Get("/connectors")
     public HttpResponse<String> connectors() throws Exception {
-        return forward(http.get(knowledgeBase + "/connectors"));
+        return forward(http.get(knowledgeBase + "/connectors", "knowledge", "list_connectors"));
     }
 
     @Get("/workspaces/{workspaceId}/sources")
@@ -37,7 +37,11 @@ public class KnowledgeProxyController {
             @PathVariable String workspaceId,
             @RequestAttribute(value = SecurityAttributes.ORG_ID, defaultValue = "") String orgId)
             throws Exception {
-        return forward(http.get(knowledgeBase + "/workspaces/" + workspaceId + "/sources?org_id=" + orgId));
+        return forward(
+                http.get(
+                        knowledgeBase + "/workspaces/" + workspaceId + "/sources?org_id=" + orgId,
+                        "knowledge",
+                        "list_sources"));
     }
 
     @Post("/workspaces/{workspaceId}/sources")
@@ -46,17 +50,27 @@ public class KnowledgeProxyController {
             @RequestAttribute(value = SecurityAttributes.ORG_ID, defaultValue = "") String orgId,
             @Body String body)
             throws Exception {
-        return forward(http.post(knowledgeBase + "/workspaces/" + workspaceId + "/sources?org_id=" + orgId, body));
+        return forward(
+                http.post(
+                        knowledgeBase + "/workspaces/" + workspaceId + "/sources?org_id=" + orgId,
+                        body,
+                        "knowledge",
+                        "create_source"));
     }
 
     @Post("/search")
     public HttpResponse<String> search(@Body String body) throws Exception {
-        return forward(http.post(knowledgeBase + "/search", body));
+        return forward(http.post(knowledgeBase + "/search", body, "knowledge", "search"));
     }
 
     @Post("/sources/{sourceId}/reindex")
     public HttpResponse<String> reindex(@PathVariable String sourceId, @Body @Nullable String body) throws Exception {
-        return forward(http.post(knowledgeBase + "/sources/" + sourceId + "/reindex", body != null ? body : "{}"));
+        return forward(
+                http.post(
+                        knowledgeBase + "/sources/" + sourceId + "/reindex",
+                        body != null ? body : "{}",
+                        "knowledge",
+                        "reindex"));
     }
 
     private static HttpResponse<String> forward(HttpResponse<String> downstream) {

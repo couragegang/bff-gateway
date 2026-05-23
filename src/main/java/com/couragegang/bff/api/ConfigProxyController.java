@@ -20,10 +20,11 @@ import jakarta.annotation.Nullable;
 public class ConfigProxyController {
 
     private final String configBase;
-    private final DownstreamClient http = new DownstreamClient();
+    private final DownstreamClient http;
 
-    public ConfigProxyController(BffProperties props) {
+    public ConfigProxyController(BffProperties props, DownstreamClient http) {
         this.configBase = trim(props.getConfigBaseUrl());
+        this.http = http;
     }
 
     @Get("/orgs/{orgId}/workspaces")
@@ -36,24 +37,34 @@ public class ConfigProxyController {
         if (groupId != null && !groupId.isBlank()) {
             url += "&group_id=" + groupId;
         }
-        return forward(http.get(url));
+        return forward(http.get(url, "config", "list_workspaces"));
     }
 
     @Post("/orgs/{orgId}/workspaces")
     public HttpResponse<String> create(
             @PathVariable String orgId, @Body @Nullable String body) throws Exception {
-        return forward(http.post(configBase + "/orgs/" + orgId + "/workspaces", body != null ? body : "{}"));
+        return forward(
+                http.post(
+                        configBase + "/orgs/" + orgId + "/workspaces",
+                        body != null ? body : "{}",
+                        "config",
+                        "create_workspace"));
     }
 
     @Get("/workspaces/{workspaceId}")
     public HttpResponse<String> get(@PathVariable String workspaceId) throws Exception {
-        return forward(http.get(configBase + "/workspaces/" + workspaceId));
+        return forward(http.get(configBase + "/workspaces/" + workspaceId, "config", "get_workspace"));
     }
 
     @Patch("/workspaces/{workspaceId}")
     public HttpResponse<String> patch(
             @PathVariable String workspaceId, @Body @Nullable String body) throws Exception {
-        return forward(http.patch(configBase + "/workspaces/" + workspaceId, body != null ? body : "{}"));
+        return forward(
+                http.patch(
+                        configBase + "/workspaces/" + workspaceId,
+                        body != null ? body : "{}",
+                        "config",
+                        "patch_workspace"));
     }
 
     private static HttpResponse<String> forward(HttpResponse<String> downstream) {

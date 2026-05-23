@@ -1,6 +1,7 @@
 package com.couragegang.bff.iam;
 
 import com.couragegang.bff.config.BffProperties;
+import com.couragegang.bff.metrics.OutboundHttpMetrics;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Singleton;
@@ -23,11 +24,13 @@ public class IamIntrospectClient {
 
     private final String introspectUrl;
     private final HttpClient http;
+    private final OutboundHttpMetrics metrics;
     private final ObjectMapper json;
 
-    public IamIntrospectClient(BffProperties props) {
+    public IamIntrospectClient(BffProperties props, OutboundHttpMetrics metrics) {
         var base = props.getIamBaseUrl().endsWith("/") ? props.getIamBaseUrl().substring(0, props.getIamBaseUrl().length() - 1) : props.getIamBaseUrl();
         this.introspectUrl = base + "/internal/token/introspect";
+        this.metrics = metrics;
         this.http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         this.json = new ObjectMapper();
     }
@@ -41,7 +44,7 @@ public class IamIntrospectClient {
                             .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                             .build();
-            var response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            var response = metrics.send(http, request, "iam", "introspect");
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 LOG.warn("iam introspect http {}: {}", response.statusCode(), response.body());
                 return Optional.empty();

@@ -17,10 +17,11 @@ import jakarta.annotation.Nullable;
 public class AuditProxyController {
 
     private final String auditBase;
-    private final DownstreamClient http = new DownstreamClient();
+    private final DownstreamClient http;
 
-    public AuditProxyController(BffProperties props) {
+    public AuditProxyController(BffProperties props, DownstreamClient http) {
         this.auditBase = trim(props.getAuditBaseUrl());
+        this.http = http;
     }
 
     @Get("/orgs/{orgId}/tool-events")
@@ -31,7 +32,7 @@ public class AuditProxyController {
         if (workspaceId != null && !workspaceId.isBlank()) {
             url += "?workspace_id=" + workspaceId;
         }
-        return forward(http.get(url));
+        return forward(http.get(url, "audit", "list_tool_events"));
     }
 
     private static HttpResponse<String> forward(HttpResponse<String> downstream) {
