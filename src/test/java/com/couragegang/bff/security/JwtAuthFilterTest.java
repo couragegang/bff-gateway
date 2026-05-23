@@ -90,4 +90,18 @@ class JwtAuthFilterTest {
 
         assertThat(response.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
     }
+
+    @Test
+    void skipsJwtForApiAuthRoutes() {
+        var iam = mock(IamIntrospectClient.class);
+        var filter = new JwtAuthFilter(iam);
+        var chain = mock(ServerFilterChain.class);
+        when(chain.proceed(org.mockito.ArgumentMatchers.any())).thenReturn(Mono.empty());
+        var request = HttpRequest.POST("/api/auth/login", "{}");
+
+        Mono.from(filter.doFilter(request, chain)).block();
+
+        org.mockito.Mockito.verify(chain).proceed(request);
+        org.mockito.Mockito.verifyNoInteractions(iam);
+    }
 }
