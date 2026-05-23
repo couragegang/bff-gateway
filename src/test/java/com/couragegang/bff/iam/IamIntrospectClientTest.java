@@ -47,7 +47,7 @@ class IamIntrospectClientTest {
                 exchange -> {
                     var body =
                             """
-                            {"active":true,"sub":"user-1","orgId":"org-1","permissions":["read"]}
+                            {"active":true,"sub":"user-1","orgId":"org-1","groupId":"g1","workspaceId":"ws1","permissions":["read"]}
                             """
                                     .trim();
                     exchange.sendResponseHeaders(200, body.length());
@@ -64,7 +64,27 @@ class IamIntrospectClientTest {
 
         assertThat(result).isPresent();
         assertThat(result.get().userId()).isEqualTo("user-1");
+        assertThat(result.get().orgId()).isEqualTo("org-1");
+        assertThat(result.get().groupId()).isEqualTo("g1");
+        assertThat(result.get().workspaceId()).isEqualTo("ws1");
         assertThat(result.get().permissions()).containsExactly("read");
+    }
+
+    @Test
+    void introspectBlankSubReturnsEmpty() {
+        server.createContext(
+                "/v1/iam/internal/token/introspect",
+                exchange -> {
+                    var body = "{\"active\":true,\"sub\":\"  \"}";
+                    exchange.sendResponseHeaders(200, body.length());
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(body.getBytes(StandardCharsets.UTF_8));
+                    }
+                });
+
+        var props = new BffProperties();
+        props.setIamBaseUrl(baseUrl + "/");
+        assertThat(new IamIntrospectClient(props).introspect("t")).isEmpty();
     }
 
     @Test
@@ -82,6 +102,26 @@ class IamIntrospectClientTest {
         var props = new BffProperties();
         props.setIamBaseUrl(baseUrl);
         assertThat(new IamIntrospectClient(props).introspect("t")).isEmpty();
+    }
+
+    @Test
+    void introspectNonArrayPermissions() {
+        server.createContext(
+                "/v1/iam/internal/token/introspect",
+                exchange -> {
+                    var body = "{\"active\":true,\"sub\":\"u1\",\"permissions\":\"read\"}";
+                    exchange.sendResponseHeaders(200, body.length());
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(body.getBytes(StandardCharsets.UTF_8));
+                    }
+                });
+
+        var props = new BffProperties();
+        props.setIamBaseUrl(baseUrl);
+        var result = new IamIntrospectClient(props).introspect("t");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().permissions()).isEmpty();
     }
 
     @Test

@@ -42,18 +42,12 @@ class JwtAuthFilterTest {
 
     @Test
     void proceedsAndSetsAttributes() {
-        var userId = UUID.randomUUID().toString();
-        var orgId = UUID.randomUUID().toString();
         var iam = mock(IamIntrospectClient.class);
         when(iam.introspect("tok"))
                 .thenReturn(
                         Optional.of(
                                 new IamIntrospectClient.IntrospectResult(
-                                        userId,
-                                        orgId,
-                                        UUID.randomUUID().toString(),
-                                        UUID.randomUUID().toString(),
-                                        List.of("read"))));
+                                        "user-1", "org-1", "group-1", "ws-1", List.of("read"))));
         var filter = new JwtAuthFilter(iam);
         var chain = mock(ServerFilterChain.class);
         when(chain.proceed(org.mockito.ArgumentMatchers.any())).thenReturn(Mono.empty());
@@ -61,7 +55,39 @@ class JwtAuthFilterTest {
 
         Mono.from(filter.doFilter(request, chain)).block();
 
-        assertThat(request.getAttribute(SecurityAttributes.USER_ID, String.class).orElseThrow()).isEqualTo(userId);
-        assertThat(request.getAttribute(SecurityAttributes.ORG_ID, String.class).orElseThrow()).isEqualTo(orgId);
+        assertThat(request.getAttribute(SecurityAttributes.USER_ID, String.class).orElseThrow()).isEqualTo("user-1");
+        assertThat(request.getAttribute(SecurityAttributes.ORG_ID, String.class).orElseThrow()).isEqualTo("org-1");
+        assertThat(request.getAttribute(SecurityAttributes.GROUP_ID, String.class).orElseThrow()).isEqualTo("group-1");
+        assertThat(request.getAttribute(SecurityAttributes.WORKSPACE_ID, String.class).orElseThrow())
+                .isEqualTo("ws-1");
+    }
+
+    @Test
+    void proceedsWhenOptionalContextFieldsNull() {
+        var iam = mock(IamIntrospectClient.class);
+        when(iam.introspect("tok"))
+                .thenReturn(
+                        Optional.of(
+                                new IamIntrospectClient.IntrospectResult("user-1", null, null, null, List.of())));
+        var filter = new JwtAuthFilter(iam);
+        var chain = mock(ServerFilterChain.class);
+        when(chain.proceed(org.mockito.ArgumentMatchers.any())).thenReturn(Mono.empty());
+        var request = HttpRequest.GET("/api/x").header("Authorization", "Bearer tok");
+
+        Mono.from(filter.doFilter(request, chain)).block();
+
+        assertThat(request.getAttribute(SecurityAttributes.USER_ID, String.class)).isPresent();
+        assertThat(request.getAttribute(SecurityAttributes.ORG_ID, String.class)).isEmpty();
+    }
+
+    @Test
+    void rejectsBearerWithoutSpace() {
+        var iam = mock(IamIntrospectClient.class);
+        var filter = new JwtAuthFilter(iam);
+        var request = HttpRequest.GET("/api/x").header("Authorization", "Bearertok");
+
+        var response = Mono.from(filter.doFilter(request, mock(ServerFilterChain.class))).block();
+
+        assertThat(response.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
     }
 }
