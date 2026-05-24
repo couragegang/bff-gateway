@@ -123,4 +123,12 @@ class JwtAuthFilterTest {
     void normalizeApiPathStripsContextPrefix() {
         assertThat(JwtAuthFilter.normalizeApiPath("/v1/bff/api/auth/register")).isEqualTo("/api/auth/register");
     }
+
+    @Test
+    void normalizeApiPathHandlesNullBlankAndContextRoot() {
+        assertThat(JwtAuthFilter.normalizeApiPath(null)).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("   ")).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("/v1/bff")).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("/api/me")).isEqualTo("/api/me");
+    }
 }
