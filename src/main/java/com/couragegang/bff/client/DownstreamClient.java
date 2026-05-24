@@ -56,4 +56,15 @@ public final class DownstreamClient {
         return HttpResponse.status(io.micronaut.http.HttpStatus.valueOf(response.statusCode()))
                 .body(response.body());
     }
+
+    public HttpResponse<String> delete(String url, String integration, String operation) throws Exception {
+        var request =
+                HttpRequest.newBuilder(URI.create(url))
+                        .timeout(Duration.ofSeconds(15))
+                        .DELETE()
+                        .build();
+        var response = metrics.send(http, request, integration, operation);
+        return HttpResponse.status(io.micronaut.http.HttpStatus.valueOf(response.statusCode()))
+                .body(response.body());
+    }
 }

@@ -41,7 +41,7 @@ public class AiProxyController {
             throw new HttpStatusException(
                     io.micronaut.http.HttpStatus.BAD_REQUEST, "workspace_id required (JWT or X-Workspace-Id)");
         }
-        var node = (ObjectNode) json.readTree(body);
+        var node = (ObjectNode) json.readTree(body != null && !body.isBlank() ? body : "{}");
         node.put("workspaceId", workspaceId);
         if (orgId != null && !orgId.isBlank()) {
             node.put("orgId", orgId);
