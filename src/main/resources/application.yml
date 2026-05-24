@@ -34,6 +34,7 @@ micronaut:
         url: ${bff.mcp-base-url}
       ai:
         url: ${bff.ai-base-url}
+        read-timeout: 120s
 
 endpoints:
   health:
