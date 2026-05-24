@@ -61,7 +61,19 @@ public class JwtAuthFilter implements HttpServerFilter {
     }
 
     static boolean isPublicAuthRoute(HttpRequest<?> request) {
-        var path = request.getPath();
+        var path = normalizeApiPath(request.getPath());
         return path.equals("/api/auth") || path.startsWith("/api/auth/");
+    }
+
+    /** Strip Micronaut context-path (/v1/bff) so public routes match behind nginx and vite proxy. */
+    static String normalizeApiPath(String path) {
+        if (path == null || path.isBlank()) {
+            return "/";
+        }
+        if (path.startsWith("/v1/bff")) {
+            var rest = path.substring("/v1/bff".length());
+            return rest.isEmpty() ? "/" : rest;
+        }
+        return path;
     }
 }

@@ -104,4 +104,31 @@ class JwtAuthFilterTest {
         org.mockito.Mockito.verify(chain).proceed(request);
         org.mockito.Mockito.verifyNoInteractions(iam);
     }
+
+    @Test
+    void skipsJwtForApiAuthRoutesWithContextPath() {
+        var iam = mock(IamIntrospectClient.class);
+        var filter = new JwtAuthFilter(iam);
+        var chain = mock(ServerFilterChain.class);
+        when(chain.proceed(org.mockito.ArgumentMatchers.any())).thenReturn(Mono.empty());
+        var request = HttpRequest.POST("/v1/bff/api/auth/register", "{}");
+
+        Mono.from(filter.doFilter(request, chain)).block();
+
+        org.mockito.Mockito.verify(chain).proceed(request);
+        org.mockito.Mockito.verifyNoInteractions(iam);
+    }
+
+    @Test
+    void normalizeApiPathStripsContextPrefix() {
+        assertThat(JwtAuthFilter.normalizeApiPath("/v1/bff/api/auth/register")).isEqualTo("/api/auth/register");
+    }
+
+    @Test
+    void normalizeApiPathHandlesNullBlankAndContextRoot() {
+        assertThat(JwtAuthFilter.normalizeApiPath(null)).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("   ")).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("/v1/bff")).isEqualTo("/");
+        assertThat(JwtAuthFilter.normalizeApiPath("/api/me")).isEqualTo("/api/me");
+    }
 }
