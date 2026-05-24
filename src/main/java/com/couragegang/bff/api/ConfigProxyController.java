@@ -23,7 +23,7 @@ public class ConfigProxyController {
     private final DownstreamClient http;
 
     public ConfigProxyController(BffProperties props, DownstreamClient http) {
-        this.configBase = trim(props.getConfigBaseUrl());
+        this.configBase = resolveConfigBase(props);
         this.http = http;
     }
 
@@ -72,6 +72,18 @@ public class ConfigProxyController {
             throw new HttpStatusException(downstream.getStatus(), downstream.body());
         }
         return HttpResponse.status(downstream.getStatus()).body(downstream.body());
+    }
+
+    private static String resolveConfigBase(BffProperties props) {
+        String base = props.getConfigBaseUrl();
+        if (base == null || base.isBlank()) {
+            base = System.getenv("CONFIG_SERVICE_URL");
+        }
+        if (base == null || base.isBlank()) {
+            throw new IllegalStateException(
+                    "CONFIG_BASE_URL or CONFIG_SERVICE_URL must be set for config-service proxy");
+        }
+        return trim(base);
     }
 
     private static String trim(String base) {
